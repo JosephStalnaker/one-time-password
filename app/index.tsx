@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,11 @@ export default function HomeScreen() {
   const [success, setSuccess] = useState(false);
   const inputsRef = useRef<(TextInput | null)[]>([]);
 
-=  const handleChange = (text: string, index: number) => {
+  useEffect(() => {
+    console.log("success:", success);
+  }, [success]);
+
+  const handleChange = (text: string, index: number) => {
     const newCode = [...code];
     newCode[index] = text;
     setCode(newCode);
@@ -27,7 +31,6 @@ export default function HomeScreen() {
     if (!text && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
-
     if (newCode.every((digit) => digit !== "")) {
       submitPassword(newCode.join(""));
     }
@@ -36,37 +39,34 @@ export default function HomeScreen() {
   const generateOneTimePassword = () => {
     const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
     setOTP(newOTP);
+    console.log("generated otp:", newOTP);
 
     Alert.alert(
       "One Time Password",
       `Here is your one time password: ${newOTP}`,
-      [
-        {
-          text: "OK",
-          onPress: () => console.log("OTP:", newOTP),
-        },
-      ],
-      { cancelable: true }
+      [{ text: "OK", onPress: () => console.log("OTP alert ok") }]
     );
 
     setSuccess(false);
     setCode(["", "", "", "", "", ""]);
-    inputsRef.current[0]?.focus();
+    setTimeout(() => inputsRef.current[0]?.focus(), 50);
   };
 
   const submitPassword = (userSubmittedOTP?: string) => {
     setLoading(true);
-    const otpToCheck = userSubmittedOTP || code.join("");
+    const otpToCheck = userSubmittedOTP ?? code.join("");
+    console.log("submitting otp:", otpToCheck, "expected:", otp);
 
     setTimeout(() => {
       setLoading(false);
-
-      if (otpToCheck === otp) {
+      if (otpToCheck === otp && otp !== "") {
         setSuccess(true);
+        console.log("OTP matched -> success true");
       } else {
         Alert.alert("Incorrect OTP", "Please try again.");
+        console.log("OTP mismatch");
       }
-    }, 2000);
+    }, 1200);
   };
 
   return (
@@ -78,8 +78,8 @@ export default function HomeScreen() {
           <View style={styles.inputContainer}>
             {code.map((digit, i) => (
               <TextInput
-                autoFocus={i === 0}
                 key={i}
+                autoFocus={i === 0}
                 ref={(ref) => (inputsRef.current[i] = ref)}
                 style={styles.input}
                 value={digit}
@@ -105,18 +105,19 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={() => submitPassword()}
-          style={styles.primaryButton}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Submit</Text>
-          )}
-        </TouchableOpacity>
-
+        {!success && (
+          <TouchableOpacity
+            onPress={() => submitPassword()}
+            style={styles.primaryButton}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Submit</Text>
+            )}
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           onPress={generateOneTimePassword}
           style={styles.secondaryButton}
@@ -137,11 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  headerText: {
-    fontSize: 28,
-    fontWeight: "600",
-    paddingVertical: 20,
-  },
+  headerText: { fontSize: 28, fontWeight: "600", paddingVertical: 20 },
   contentWrapper: {
     width: "100%",
     justifyContent: "center",
@@ -171,11 +168,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 60,
   },
-  successText: {
-    fontSize: 20,
-    fontWeight: "500",
-    textAlign: "center",
-  },
+  successText: { fontSize: 20, fontWeight: "500", textAlign: "center" },
   buttonContainer: {
     width: "100%",
     position: "absolute",
@@ -196,11 +189,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
-  },
+  primaryButtonText: { fontSize: 16, fontWeight: "600", color: "#FFFFFF" },
   secondaryButton: {
     paddingVertical: 8,
     width: "100%",
@@ -209,9 +198,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 8,
   },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000000",
-  },
+  secondaryButtonText: { fontSize: 16, fontWeight: "600", color: "#000000" },
 });
