@@ -66,7 +66,7 @@ export default function HomeScreen() {
         Alert.alert("Incorrect OTP", "Please try again.");
         console.log("OTP mismatch");
       }
-    }, 1200);
+    }, 3000);
   };
 
   return (
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     position: "absolute",
-    bottom: 0,
+    bottom: 40,
     flexDirection: "column",
   },
   primaryButton: {
