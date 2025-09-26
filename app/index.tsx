@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -33,6 +34,7 @@ export default function HomeScreen() {
     }
     if (newCode.every((digit) => digit !== "")) {
       submitPassword(newCode.join(""));
+      Keyboard.dismiss();
     }
   };
 
